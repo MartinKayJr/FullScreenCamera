@@ -86,7 +86,8 @@ public class CameraViewHelper {
         cameraHelper.TakePicture(new Camera.PreviewCallback() {
             @Override
             public void onPreviewFrame(byte[] data, Camera camera) {
-
+                Bitmap bmp = getBmpPicData(data, camera);
+                saveBitmap(bmp);
             }
         });
     }
@@ -114,7 +115,7 @@ public class CameraViewHelper {
     }
 
     // Yuv data 转bmp
-    private Bitmap getBmpPicData(byte[] data, Camera camera){
+    private static Bitmap getBmpPicData(byte[] data, Camera camera){
         Camera.Size size = camera.getParameters().getPreviewSize();
         YuvImage image = new YuvImage(data, ImageFormat.NV21,size.width, size.height,null);
         if(image != null){
@@ -133,7 +134,7 @@ public class CameraViewHelper {
     }
 
     // 保存图片(/Android/data/packname/caches/)目录下
-    private void saveBitmap(Bitmap bmp) {
+    private static void saveBitmap(Bitmap bmp) {
         String path = activity.getExternalCacheDir() +"/" + System.currentTimeMillis()+".jpg";
         try{
             File img = new File(path);
