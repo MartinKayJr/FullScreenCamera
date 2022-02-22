@@ -28,8 +28,7 @@ import java.io.IOException;
 import java.sql.Time;
 
 public class Cocos2dxActivity extends Activity {
-    private CameraSurfaceView cameraSurfaceView;
-    private CameraHelper cameraHelper=null;
+    CameraViewHelper cameraViewHelper = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,20 +40,15 @@ public class Cocos2dxActivity extends Activity {
         Button Snap = (Button)findViewById(R.id.Snap);
         Button CloseCamera = (Button)findViewById(R.id.CloseCamera);
 
-        cameraHelper = new CameraHelper(this);
+        cameraViewHelper = new CameraViewHelper(this, layout);
 
         OpenCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 有相机
-                if(cameraHelper.HasCamera()){
-                    if (cameraSurfaceView==null){
-                        cameraSurfaceView = new CameraSurfaceView(Cocos2dxActivity.this, cameraHelper);
-                    }
-                    OpenCamera.setEnabled(false);
-                    layout.addView(cameraSurfaceView, 0);
-                    cameraHelper.OpenCamera(cameraSurfaceView.getHolder());
-                }else {
+                if(CameraViewHelper.HasCamera()){
+                CameraViewHelper.OpenCamera();
+                }
+                else {
                     ShowNoCameraDialog();
                 }
             }
@@ -63,66 +57,17 @@ public class Cocos2dxActivity extends Activity {
         Snap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cameraHelper.TakePicture(new Camera.PreviewCallback() {
-                    @Override
-                    public void onPreviewFrame(byte[] data, Camera camera) {
-                        Bitmap bmp = getBmpPicData(data, camera);
-                        saveBitmap(bmp);
-                    }
-                });
+                CameraViewHelper.TakePic();
             }
         });
 
         CloseCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cameraHelper.DestoryCamera();
-                layout.removeView(cameraSurfaceView);
-                OpenCamera.setEnabled(true);
+                CameraViewHelper.DestoryCamera();
             }
         });
     }
-
-    // Yuv data 转bmp
-    private Bitmap getBmpPicData(byte[] data, Camera camera){
-        Camera.Size size = camera.getParameters().getPreviewSize();
-        YuvImage image = new YuvImage(data, ImageFormat.NV21,size.width, size.height,null);
-        if(image != null){
-            Bitmap bmp = null;
-            try {
-                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                image.compressToJpeg(new Rect(0,0, size.width, size.height),80, stream);
-                bmp = BitmapFactory.decodeByteArray(stream.toByteArray(),0, stream.size());
-                stream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return bmp;
-        }
-        return null;
-    }
-
-    // 保存图片
-    public void saveBitmap(Bitmap bmp) {
-        String path = Environment.getExternalStorageDirectory() +"/" + System.currentTimeMillis()+".jpg";
-        try{
-            File img = new File(path);
-            if(!img.exists()){
-                img.getParentFile().mkdir();
-                img.createNewFile();
-            }
-            FileOutputStream fs = new FileOutputStream(img);
-            // 图片压缩
-            bmp.compress(Bitmap.CompressFormat.JPEG, 70, fs);
-            fs.flush();
-            fs.close();
-            Toast.makeText(this,"图片保存成功",Toast.LENGTH_SHORT).show();
-
-        }catch (IOException ex){
-            ex.printStackTrace();
-        }
-    }
-
 
     // region util
     private void ShowNoCameraDialog(){
@@ -132,9 +77,7 @@ public class Cocos2dxActivity extends Activity {
         builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                intent.setData(Uri.fromParts("package",getPackageName(),null));
-                startActivity(intent);
+                CameraViewHelper.OpenAppSetting();
             }
         });
         builder.setNegativeButton("取消", null);
