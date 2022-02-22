@@ -152,7 +152,7 @@ public class CameraHelper {
 
     // 拍照
     public void TakePicture(Camera.PreviewCallback callback){
-        //mCamera.takePicture(null,null, callback);
+       //  mCamera.takePicture(null,null, callback);
         if(mCamera!=null){
             mCamera.setOneShotPreviewCallback(callback);
         }
@@ -167,7 +167,6 @@ public class CameraHelper {
             parameters = mCamera.getParameters();
 
             // 设置自动聚焦
-            //自动对焦
             if (parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
                 parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
             }
