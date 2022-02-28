@@ -2,9 +2,11 @@ package com.example.demo;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
@@ -69,6 +71,18 @@ public class Cocos2dxActivity extends Activity {
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(batteryReceiver,new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(batteryReceiver);
+    }
+
     // region util
     private void ShowNoCameraDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -84,4 +98,14 @@ public class Cocos2dxActivity extends Activity {
         builder.show();
     }
     // endregion util
+
+    private BroadcastReceiver batteryReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int level = intent.getIntExtra("level", 0);
+            int scale = intent.getIntExtra("scale", 100);
+            int status = intent.getIntExtra("status", 0);
+            //batteryInfo.setText(level * 100/scale+"% :"+status);
+        }
+    };
 }
