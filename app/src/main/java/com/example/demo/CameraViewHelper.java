@@ -12,6 +12,8 @@ import android.hardware.Camera;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.text.Layout;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -23,7 +25,7 @@ import java.io.IOException;
 /// 外部调用接口
 public class CameraViewHelper {
 
-    private Camera camera = null;
+    //private Camera camera = null;
     private static Cocos2dxActivity activity;
     private static FrameLayout layout;
 
@@ -45,33 +47,48 @@ public class CameraViewHelper {
 
     // 打开相机
     public static void OpenCamera(){
-        if(HasCamera()){
-            layout.addView(surfaceView,0);
-            cameraHelper.OpenCamera(surfaceView.getHolder());
-        }else {
-            AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-            builder.setTitle("提示");
-            builder.setMessage("该设备无相机硬件或权限被禁用，请检查权限");
-            builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    OpenAppSetting();
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(HasCamera()){
+                    layout.addView(surfaceView);
+                    cameraHelper.OpenCamera(surfaceView.getHolder());
+                }else {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                    builder.setTitle("提示");
+                    builder.setMessage("该设备无相机硬件或权限被禁用，请检查权限");
+                    builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            OpenAppSetting();
+                        }
+                    });
+                    builder.setNegativeButton("取消", null);
+                    builder.show();
                 }
-            });
-            builder.setNegativeButton("取消", null);
-            builder.show();
-        }
+            }
+        });
     }
 
     // 切换相机
     public static void SwitchCamera(){
-        cameraHelper.SwitchCamera(surfaceView.getHolder());
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                cameraHelper.SwitchCamera(surfaceView.getHolder());
+            }
+        });
     }
 
     // 销毁相机
     public static void DestoryCamera(){
-        cameraHelper.DestoryCamera();
-        layout.removeView(surfaceView);
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                cameraHelper.DestoryCamera();
+                layout.removeView(surfaceView);
+            }
+        });
     }
 
     // 打开APP的设置
@@ -109,9 +126,11 @@ public class CameraViewHelper {
         return false;
     }
 
-    // 打开相册
+    // 打开相册(单纯打开)
     public static void OpenGallery(){
-
+        Intent intent =new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        activity.startActivity(intent);
     }
 
     // Yuv data 转bmp
