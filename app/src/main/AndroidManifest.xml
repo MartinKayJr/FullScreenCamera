@@ -8,7 +8,7 @@
         android:supportsRtl="true">
         <activity
             android:name=".Cocos2dxActivity"
-            android:screenOrientation="portrait"
+            android:screenOrientation="landscape"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             android:exported="true">
             <intent-filter>

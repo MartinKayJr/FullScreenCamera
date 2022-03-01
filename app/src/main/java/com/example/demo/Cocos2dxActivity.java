@@ -41,6 +41,7 @@ public class Cocos2dxActivity extends Activity {
         Button OpenCamera = (Button) findViewById(R.id.OpenCamera);
         Button Snap = (Button)findViewById(R.id.Snap);
         Button CloseCamera = (Button)findViewById(R.id.CloseCamera);
+        Button SwitchCamera = (Button) findViewById(R.id.switchCamera);
 
         cameraViewHelper = new CameraViewHelper(this, layout);
 
@@ -67,6 +68,13 @@ public class Cocos2dxActivity extends Activity {
             @Override
             public void onClick(View v) {
                 CameraViewHelper.DestoryCamera();
+            }
+        });
+
+        SwitchCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CameraViewHelper.SwitchCamera();
             }
         });
     }

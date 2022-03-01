@@ -1,7 +1,6 @@
 package com.example.demo;
 
 import android.app.Activity;
-import android.hardware.Camera;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -20,12 +19,15 @@ public class CameraSurfaceView extends SurfaceView implements SurfaceHolder.Call
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         if(cameraHelper != null){
-            cameraHelper.OpenCamera(holder);
+            cameraHelper.StartPreview(holder);
         }
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        if(holder.getSurface() == null)
+            return;
+
         if(cameraHelper!=null){
             cameraHelper.StopPreview();
             cameraHelper.StartPreview(holder);

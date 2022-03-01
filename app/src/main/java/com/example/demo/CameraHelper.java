@@ -1,20 +1,17 @@
 package com.example.demo;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
 import android.graphics.Point;
 import android.hardware.Camera;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.util.Size;
 import android.view.OrientationEventListener;
 import android.view.Surface;
 import android.view.SurfaceHolder;
-import android.view.WindowManager;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.List;
@@ -25,7 +22,6 @@ public class CameraHelper {
     private Activity activity;
     private Camera mCamera;
     private Camera.Parameters parameters;
-    private boolean isPrevious = false;
 
     // 相机ID(默认后置相机)
     private int cameraID = Camera.CameraInfo.CAMERA_FACING_BACK;
@@ -48,27 +44,18 @@ public class CameraHelper {
 
     // 0 后摄  1 前摄
     public boolean HasCamera(){
-        try{
-            mCamera = Camera.open(cameraID);
-            mCamera.release();
-            mCamera=null;
-        }catch(Exception exception){
-            return false;
-        }
-        return true;
+        return activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
     }
 
     // 打开相机
-    public void OpenCamera(SurfaceHolder holder){
+    public void OpenCamera(){
         try{
             Log.d(TAG,"打开相机: " + cameraID);
-            mCamera = Camera.open(cameraID);
+            mCamera = GetCamera();
             Camera.getCameraInfo(cameraID, cameraInfo);
             initCamera();
             setDispalyRotation();
             orientationEventListener.enable();
-            // 设置
-            StartPreview(holder);
         }
         catch (Exception ex){
             //ex.printStackTrace();
@@ -77,14 +64,21 @@ public class CameraHelper {
 
     // 获取相机
     public Camera GetCamera(){
-        return mCamera;
+        Camera camera;
+       try{
+            camera = Camera.open(cameraID);
+       }catch (Exception ex){
+           camera = null;
+           ex.printStackTrace();
+       }
+       return camera;
     }
 
     // 切换前后相机
-    public void SwitchCamera(SurfaceHolder holder){
-        cameraID = cameraID == 0 ? 1 : 0;
+    public void SwitchCamera(){
         DestoryCamera();
-        OpenCamera(holder);
+        cameraID = cameraID == 0 ? 1 : 0;
+        OpenCamera();
     }
 
     // 销毁相机
@@ -105,12 +99,9 @@ public class CameraHelper {
             try{
                 Log.d(TAG, "开始预览");
                 mCamera.setPreviewDisplay(holder);
+                mCamera.startPreview();
             }catch (IOException ex){
                 ex.printStackTrace();
-            }
-            if(!isPrevious){
-                mCamera.startPreview();
-                isPrevious = true;
             }
             Log.d(TAG, parameters.getPictureSize().width+" <-:-> "+parameters.getPictureSize().height);
         }
@@ -138,10 +129,7 @@ public class CameraHelper {
     public void StopPreview(){
         if(mCamera != null){
             Log.d(TAG, "StopPreview");
-            if(isPrevious) {
-                mCamera.stopPreview();
-                isPrevious = false;
-            }
+            mCamera.stopPreview();
         }
     }
 
@@ -182,14 +170,10 @@ public class CameraHelper {
             // 拿到屏幕尺寸
             DisplayMetrics metrics = new DisplayMetrics();
             activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-            // 要保证宽>高
-            int screenWidth = metrics.widthPixels > metrics.heightPixels ? metrics.widthPixels : metrics.heightPixels;
-            int screenHeight = metrics.widthPixels < metrics.heightPixels ? metrics.widthPixels : metrics.heightPixels;
-
 
             // 设置预览大小
-            Point  previousSize = findBestPreviewSizeValue(parameters.getSupportedPreviewSizes(), screenWidth, screenHeight);
-            parameters.setPreviewSize(previousSize.x, previousSize.y);
+            Point  previousSize = findBestPreviewSizeValue(parameters.getSupportedPreviewSizes(), metrics.widthPixels, metrics.heightPixels);
+            parameters.setPreviewSize(previousSize.y, previousSize.x);
 
 
             mCamera.setParameters(parameters);
@@ -198,6 +182,7 @@ public class CameraHelper {
         }
     }
     // 设置屏幕旋转
+    // 横屏就设置0
     private void setDispalyRotation() {
         int roation = activity.getWindowManager().getDefaultDisplay().getRotation();
         switch (roation) {
@@ -218,7 +203,7 @@ public class CameraHelper {
         }else {
             roation = (cameraInfo.orientation - roation + 360) % 360;
         }
-        mCamera.setDisplayOrientation(roation);
+        mCamera.setDisplayOrientation(0);
     }
     // 设置图片旋转
     private void setPictureRotate(int orientation) {

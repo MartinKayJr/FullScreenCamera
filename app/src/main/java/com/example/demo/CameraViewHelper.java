@@ -25,7 +25,6 @@ import java.io.IOException;
 /// 外部调用接口
 public class CameraViewHelper {
 
-    //private Camera camera = null;
     private static Cocos2dxActivity activity;
     private static FrameLayout layout;
 
@@ -51,8 +50,8 @@ public class CameraViewHelper {
             @Override
             public void run() {
                 if(HasCamera()){
-                    layout.addView(surfaceView);
-                    cameraHelper.OpenCamera(surfaceView.getHolder());
+                    layout.addView(surfaceView, 0);
+                    cameraHelper.OpenCamera();
                 }else {
                     AlertDialog.Builder builder = new AlertDialog.Builder(activity);
                     builder.setTitle("提示");
@@ -72,12 +71,8 @@ public class CameraViewHelper {
 
     // 切换相机
     public static void SwitchCamera(){
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                cameraHelper.SwitchCamera(surfaceView.getHolder());
-            }
-        });
+        cameraHelper.SwitchCamera();
+        cameraHelper.StartPreview(surfaceView.getHolder());
     }
 
     // 销毁相机
