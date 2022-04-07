@@ -121,7 +121,7 @@ public class CameraViewHelper {
             if(!file.exists()){
                 return false;
             }
-            MediaStore.Images.Media.insertImage(activity.getContentResolver(), filePath, "DJLW_AR","DJLW_AR");
+            MediaStore.Images.Media.insertImage(activity.getContentResolver(), filePath, file.getName(),"DJLW_AR");
             Uri uri = Uri.fromFile(file);
             activity.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
             return true;
@@ -172,6 +172,7 @@ public class CameraViewHelper {
             fs.flush();
             fs.close();
             Toast.makeText(activity,"图片保存成功", Toast.LENGTH_SHORT).show();
+            SaveToGallery(path);
 
         }catch (IOException ex){
             ex.printStackTrace();
