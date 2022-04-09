@@ -1,7 +1,9 @@
 package com.example.camerademo;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -15,13 +17,15 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.provider.Settings;
-import android.text.Layout;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import com.example.camerademo.permission.PermissionChecker;
+import com.example.camerademo.permission.RequestCode;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -105,6 +109,10 @@ public class CameraViewHelper {
 
     // 拍照
     public static void TakePic(){
+        if(!HasStoragePermission()){
+            RequestStoragePermission();
+            return;
+        }
         cameraHelper.TakePicture(new Camera.PreviewCallback() {
             @Override
             public void onPreviewFrame(byte[] data, Camera camera) {
@@ -182,37 +190,84 @@ public class CameraViewHelper {
     // region permission
     // 判断相机权限
     public static boolean HasCameraPermission(){
-        if(Build.VERSION.SDK_INT >= 23 && activity.getApplicationInfo().targetSdkVersion>=23){
-            int result = ContextCompat.checkSelfPermission(activity.getApplicationContext(),Manifest.permission.CAMERA);
-            if(result == PackageManager.PERMISSION_DENIED)
-                return false;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                && activity.getApplicationInfo().targetSdkVersion>=23){
+            return PermissionChecker.HasPermission(activity.getApplicationContext(),Manifest.permission.CAMERA);
         }
         return true;
     }
 
     // 申请相机权限
     public static void RequestCameraPermission(){
-        if(Build.VERSION.SDK_INT >= 23 && activity.getApplicationInfo().targetSdkVersion>=23){
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                SweetDialog dialog = new SweetDialog(activity);
+                dialog.setTitle("“刀剑乱舞-ONLINE-”想要访问你的相机")
+                      .setContent("如果不允许，您将无法拍摄照片，也无法正常使用御伴功能。")
+                      .setPositiveButton("确定", new View.OnClickListener() {
+                          @Override
+                          public void onClick(View view) {
+                              if(PermissionChecker.NeedShowPermissionRationale(activity, Manifest.permission.CAMERA)){
+                                  // 拒绝权限并且点了不允许弹出
+                                  OpenAppSetting();
+                              }else {
+                                  ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA}, RequestCode.Camera);
+                              }
+                              dialog.dismiss();
+                          }
+                      })
+                      .setNegativeutton("不允许", new View.OnClickListener() {
+                          @Override
+                          public void onClick(View view) {
+                              dialog.dismiss();
+                          }
+                      }).show();
+            }
+        });
+    }
+
+    public static boolean HasStoragePermission(){
+        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.M &&
+                activity.getApplicationInfo().targetSdkVersion >= 23){
+            boolean write = PermissionChecker.HasPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            boolean read = PermissionChecker.HasPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE);
+            return read && write;
+        }
+        return true;
+    }
+    //请求存储权限
+    public static void RequestStoragePermission(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                && activity.getApplicationInfo().targetSdkVersion>=23) {
             activity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-                    builder.setTitle("“刀剑乱舞-ONLINE-”想要访问你的相机");
-                    builder.setMessage("如果不允许，您将无法拍摄照片，也无法正常使用御伴功能。");
-                    builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            if(ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.CAMERA)){
-                                ActivityCompat.requestPermissions(activity,new String[]{Manifest.permission.CAMERA},1);
-                            }else {
-                                // 拒绝权限并且点了不允许弹出
-                                Toast.makeText(activity, "请到设置手动打开相机权限", Toast.LENGTH_LONG).show();
-                                OpenAppSetting();
-                            }
-                        }
-                    });
-                    builder.setNegativeButton("不允许",null);
-                    builder.show();
+                SweetDialog dialog = new SweetDialog(activity);
+                dialog.setTitle("“刀剑乱舞-ONLINE-”想要访问你的内部存储")
+                      .setContent("如果不允许，拍摄照片将无法保存到相册，也无法正常使用御伴功能。")
+                      .setPositiveButton("确定", new View.OnClickListener() {
+                          @Override
+                          public void onClick(View view) {
+                              if(PermissionChecker.NeedShowPermissionRationale(activity, Manifest.permission.READ_EXTERNAL_STORAGE)
+                                      || PermissionChecker.NeedShowPermissionRationale(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+                                  // 拒绝权限并且点了不允许弹出
+                                  OpenAppSetting();
+                              }else {
+                                  ActivityCompat.requestPermissions(activity,
+                                          new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                          RequestCode.Storage);
+                              }
+                              dialog.dismiss();
+                          }
+                      })
+                      .setNegativeutton("不允许", new View.OnClickListener() {
+                          @Override
+                          public void onClick(View view) {
+                              dialog.dismiss();
+                          }
+                      })
+                      .show();
                 }
             });
         }
