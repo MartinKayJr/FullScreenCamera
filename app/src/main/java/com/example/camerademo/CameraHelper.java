@@ -83,6 +83,7 @@ public class CameraHelper {
 
     // 销毁相机
     public void DestoryCamera(){
+        orientationEventListener.disable();
         if(mCamera != null){
             Log.i(TAG,"销毁相机");
             mCamera.setPreviewCallback(null);
@@ -90,7 +91,6 @@ public class CameraHelper {
             mCamera.release();
             mCamera=null;
         }
-        orientationEventListener.disable();
     }
 
     // 开始预览
