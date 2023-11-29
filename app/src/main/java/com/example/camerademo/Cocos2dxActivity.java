@@ -23,7 +23,19 @@ public class Cocos2dxActivity extends Activity {
         Button Snap = (Button)findViewById(R.id.Snap);
         Button CloseCamera = (Button)findViewById(R.id.CloseCamera);
         Button SwitchCamera = (Button) findViewById(R.id.switchCamera);
+        Button fullscreen = (Button) findViewById(R.id.fullscreen);
 
+        fullscreen.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 将其他按钮都隐藏
+                OpenCamera.setVisibility(View.GONE);
+                Snap.setVisibility(View.GONE);
+                CloseCamera.setVisibility(View.GONE);
+                SwitchCamera.setVisibility(View.GONE);
+                fullscreen.setVisibility(View.GONE);
+            }
+        });
         cameraViewHelper = new CameraViewHelper(this, layout);
 
         OpenCamera.setOnClickListener(new View.OnClickListener() {

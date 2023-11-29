@@ -203,7 +203,7 @@ public class CameraViewHelper {
             @Override
             public void run() {
                 SweetDialog dialog = new SweetDialog(activity);
-                dialog.setTitle("“刀剑乱舞-ONLINE-”想要访问你的相机")
+                dialog.setTitle("想要访问你的相机")
                       .setContent("如果不允许，您将无法拍摄照片，也无法正常使用御伴功能。")
                       .setPositiveButton("确定", new View.OnClickListener() {
                           @Override
@@ -244,7 +244,7 @@ public class CameraViewHelper {
                 @Override
                 public void run() {
                 SweetDialog dialog = new SweetDialog(activity);
-                dialog.setTitle("“刀剑乱舞-ONLINE-”想要访问你的内部存储")
+                dialog.setTitle("想要访问你的内部存储")
                       .setContent("如果不允许，拍摄照片将无法保存到相册，也无法正常使用御伴功能。")
                       .setPositiveButton("确定", new View.OnClickListener() {
                           @Override
